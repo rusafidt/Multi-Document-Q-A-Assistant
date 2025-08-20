@@ -1,0 +1,5 @@
+LangChain is a framework for building applications powered by large language models (LLMs).
+It provides tools for document loading, text splitting, vector storage, and retrieval.
+FAISS is a popular vector database used for similarity search.
+Ollama can run local language models and embedding models directly on your machine.
+This document is just a simple test file for the Multi-Document Q&A Assistant project.

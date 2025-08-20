@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "d3aaee73-324d-40e1-a752-a86c8561a397",
+		"name": "Multi-Document Q&A Assistant",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29923469"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,18 @@
+name: multi_doc_qa
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pip
+  - pip:
+      - langchain
+      - langchain-community
+      - faiss-cpu
+      - pypdf2
+      - python-docx
+      - openai
+      - tiktoken
+      - langchain_ollama
+      - fastapi
+      - uvicorn
