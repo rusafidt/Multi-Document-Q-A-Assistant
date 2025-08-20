@@ -43,7 +43,7 @@ uvicorn main:app --reload
 ### Query via Postman or cURL
 
 **POST request to:**
-[Link](http://127.0.0.1:8000/query)
+[http://127.0.0.1:8000/query](http://127.0.0.1:8000/query)
 
 **Body (JSON):**
 
