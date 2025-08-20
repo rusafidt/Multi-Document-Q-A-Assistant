@@ -1,4 +1,3 @@
-# qa_pipeline.py
 import os
 import logging
 from langchain_community.vectorstores import FAISS
