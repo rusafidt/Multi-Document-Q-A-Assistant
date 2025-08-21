@@ -42,19 +42,20 @@ uvicorn main:app --reload
 
 ### Query via Postman or cURL
 
-**POST request to:**
+**POST request to:** 
+
 [http://127.0.0.1:8000/query](http://127.0.0.1:8000/query)
 
-**Body (JSON):**
+###Body (JSON):
 
-### Request
+**Request**
 ```json
 {
   "question": "What is this document about?"
 }
 ```
 
-### Response:
+**Response**
 ```json
 {
   "answer": "The document discusses privacy in chatbots.",
