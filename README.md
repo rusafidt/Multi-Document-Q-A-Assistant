@@ -46,7 +46,7 @@ uvicorn main:app --reload
 
 [http://127.0.0.1:8000/query](http://127.0.0.1:8000/query)
 
-###Body (JSON):
+### Body (JSON):
 
 **Request**
 ```json
