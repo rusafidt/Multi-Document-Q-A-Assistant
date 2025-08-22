@@ -8,28 +8,33 @@ from langchain.chains import RetrievalQA
 
 from config import EMBED_MODEL, LLM_MODEL
 from models.pydantic_models import QueryRequest, QueryResponse
-from ingest import build_index   # reuse ingestion
+from ingest import build_index   # reuse ingestion script to build index
 
-# Configure logging
+# ------------------------------
+# Setup logging so we can see what’s happening in the console
+# ------------------------------
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-INDEX_DIR = "index"
+INDEX_DIR = "index"  # folder where FAISS index will be saved
 
-# Initialize FastAPI app
+# ------------------------------
+# Create the FastAPI app
+# ------------------------------
 app = FastAPI(title="Multi-Document Q&A Assistant")
 
 
 def load_qa_pipeline():
     """
-    Ensure FAISS index exists, then load it into a RetrievalQA pipeline.
-    If the index is incompatible with the embedding model, rebuild it.
+    Build or load the FAISS index, then create a RetrievalQA pipeline.
+    If the index doesn’t match our embeddings (dimension mismatch), 
+    we’ll wipe it and rebuild from scratch.
     """
     embeddings = OllamaEmbeddings(model=EMBED_MODEL)
 
-    # Build index if missing
+    # If no index exists yet → build one before continuing
     if not os.path.exists(INDEX_DIR) or not os.listdir(INDEX_DIR):
         logging.info("No index found. Running ingestion to build index...")
         build_index()
@@ -43,7 +48,7 @@ def load_qa_pipeline():
         )
     except AssertionError as e:
         logging.warning("Index dimension mismatch detected. Rebuilding index...")
-        # Delete and rebuild index
+        # If embeddings don’t match → delete and rebuild index
         import shutil
         shutil.rmtree(INDEX_DIR)
         build_index()
@@ -53,11 +58,15 @@ def load_qa_pipeline():
             allow_dangerous_deserialization=True
         )
 
+    # Turn the vectorstore into a retriever that grabs top-3 matches
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
     logging.info(f"Loading Ollama model: {LLM_MODEL}")
     llm = OllamaLLM(model=LLM_MODEL)
 
+    # Create a RetrievalQA pipeline:
+    #   1. Retriever finds the most relevant docs
+    #   2. LLM generates an answer based on them
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=retriever,
@@ -66,27 +75,29 @@ def load_qa_pipeline():
     return qa_chain
 
 
-# Initialize pipeline at startup
+# Load the Q&A pipeline as soon as the app starts
 qa_chain = load_qa_pipeline()
 
 
 @app.post("/query", response_model=QueryResponse)
 def query_docs(request: QueryRequest):
     """
-    Accept a question, query the index with Ollama LLM,
-    and return the answer along with source snippets.
+    Endpoint: Accept a question, run it through our RetrievalQA chain,
+    and return both the generated answer + the document snippets used.
     """
     try:
         logging.info(f"Received query: {request.question}")
         result = qa_chain.invoke(request.question)
 
+        # Extract the model’s answer
         answer = result["result"]
 
+        # Collect sources with a short preview snippet
         sources = []
         for doc in result["source_documents"]:
             sources.append({
                 "source": doc.metadata.get("source", "Unknown"),
-                "snippet": doc.page_content[:200]
+                "snippet": doc.page_content[:200]  # first 200 chars
             })
 
         return QueryResponse(answer=answer, sources=sources)
